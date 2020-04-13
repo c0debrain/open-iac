@@ -1,0 +1,43 @@
+
+{
+    "builders": [{
+      "ami_name": "freebsd12-java14-1",
+      "instance_type": "t2.micro",
+      "region": "ap-southeast-2",
+      "type": "amazon-ebs",
+      "source_ami": "ami-0b0c5c907b0ce660d",
+      "ssh_username": "ec2-user"
+    }],
+    "provisioners": [{
+      "type": "shell",
+      "inline": [
+        "pkg install sudo",
+        "sudo -s",
+        "pkg install -y htop",
+        "pkg install -y openjdk14-14+36.1",
+        "pkg install -y tomcat9",
+        "rm -rf /usr/local/apache-tomcat-9.0/conf/tomcat-users.xml",
+        "rm -rf /usr/local/apache-tomcat-9.0/webapps/manager/WEB-INF/context.xml",
+        "rm -rf /usr/local/apache-tomcat-9.0/webapps/host-manager/WEB-INF/context.xml",
+        "service tomcat9 enable"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "conf/tomcat-users.xml",
+      "destination": "/tmp/tomcat-users.xml"
+    },
+    {
+      "type": "file",
+      "source": "META-INF/context.xml",
+      "destination": "/tmp/context.xml"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo cp /tmp/tomcat-users.xml /usr/local/apache-tomcat-9.0/conf/tomcat-users.xml",
+        "sudo cp /tmp/context.xml /usr/local/apache-tomcat-9.0/webapps/manager/META-INF/context.xml",
+        "sudo cp /tmp/context.xml /usr/local/apache-tomcat-9.0/webapps/host-manager/META-INF/context.xml"
+      ]
+    }]
+  }

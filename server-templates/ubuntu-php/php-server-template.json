@@ -1,0 +1,18 @@
+{
+    "builders": [{
+      "ami_name": "php-apache2",
+      "instance_type": "t2.micro",
+      "region": "ap-southeast-2",
+      "type": "amazon-ebs",
+      "source_ami": "ami-02a599eb01e3b3c5b",
+      "ssh_username": "ubuntu"
+    }],
+    "provisioners": [{
+      "type": "shell",
+      "inline": [
+        "sudo apt-get update",
+        "sudo apt-get install -y apache2",
+        "sudo git clone https://github.com/brikis98/php-app.git /var/www/html/app"
+      ]
+    }]
+  }

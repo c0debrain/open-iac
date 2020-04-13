@@ -1,0 +1,6 @@
+[template]
+src = "dotenv.tmpl"
+dest = "/home/ubuntu/.env"
+keys = [
+    "/sample-secret",
+]

@@ -1,0 +1,87 @@
+
+{
+    "builders": [{
+      "ami_name": "tomcat9-ubuntu18-6",
+      "instance_type": "t2.micro",
+      "region": "ap-southeast-2",
+      "type": "amazon-ebs",
+      "source_ami": "ami-04fcc97b5f6edcd89",
+      "ssh_username": "ubuntu"
+    }],
+    "provisioners": [{
+      "type": "shell",
+      "inline": [
+        "sudo apt-get update",
+        "sudo apt-get install openjdk-11-jdk -y",
+        "sudo mkdir /opt/tomcat",
+        
+        "cd /tmp",
+        "sudo curl -O http://apache.mirror.serversaustralia.com.au/tomcat/tomcat-9/v9.0.34/bin/apache-tomcat-9.0.34.tar.gz",
+        "sudo tar xzvf apache-tomcat-*tar.gz -C /opt/tomcat --strip-components=1",
+        "sudo useradd -r -m -U -d /opt/tomcat -s /bin/false tomcat",
+        "cd /opt/tomcat",
+        "sudo chgrp -R tomcat /opt/tomcat",
+        "sudo chmod -R g+r conf",
+        "sudo chmod g+x conf",
+        "sudo chown -R tomcat webapps/ work/ temp/ logs/",
+        "sudo rm -rf /opt/tomcat/conf/tomcat-users.xml",
+        "sudo rm -rf /opt/tomcat/webapps/manager/WEB-INF/context.xml",
+        "sudo rm -rf /opt/tomcat/webapps/host-manager/WEB-INF/context.xml",
+        "sudo ufw allow 8080",
+
+        "cd /tmp",
+        "sudo curl -O https://github.com/kelseyhightower/confd/releases/download/v0.16.0/confd-0.16.0-linux-amd64",
+        "sudo mkdir -p /opt/confd/bin",
+        "sudo mv confd-0.16.0-linux-amd64 /opt/confd/bin/confd",
+        "sudo chmod +x /opt/confd/bin/confd",
+        "sudo mkdir -p /etc/confd/conf.d",
+        "sudo mkdir -p /etc/confd/templates"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "conf/tomcat.service",
+      "destination": "/tmp/tomcat.service"
+    },
+    {
+      "type": "file",
+      "source": "conf/tomcat-users.xml",
+      "destination": "/tmp/tomcat-users.xml"
+    },
+    {
+      "type": "file",
+      "source": "conf/context.xml",
+      "destination": "/tmp/context.xml"
+    },
+    {
+      "type": "file",
+      "source": "conf/dotenv.tmpl",
+      "destination": "/tmp/dotenv.tmpl"
+    },
+    {
+      "type": "file",
+      "source": "conf/dotenv.toml",
+      "destination": "/tmp/dotenv.toml"
+    },
+    {
+      "type": "file",
+      "source": "conf/startup.sh",
+      "destination": "/tmp/startup.sh"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo mv /tmp/tomcat.service /etc/systemd/system/tomcat.service",
+        "sudo cp /tmp/tomcat-users.xml /opt/tomcat/conf/tomcat-users.xml",
+        "sudo cp /tmp/context.xml /opt/tomcat/webapps/manager/META-INF/context.xml",
+        "sudo cp /tmp/context.xml /opt/tomcat/webapps/host-manager/META-INF/context.xml",
+        
+        "sudo cp /tmp/dotenv.tmpl /etc/confd/templates/dotenv.tmpl",
+        "sudo cp /tmp/dotenv.toml /etc/confd/conf.d/dotenv.toml",
+
+        "sudo cp /tmp/startup.sh /etc/init.d/startup.sh",
+        "sudo chmod +x /etc/init.d/startup.sh",
+        "sudo update-rc.d startup.sh defaults"
+      ]
+    }]
+  }

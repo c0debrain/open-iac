@@ -1,0 +1,26 @@
+digraph {
+	compound = "true"
+	newrank = "true"
+	subgraph "root" {
+		"[root] aws_instance.tomcat-instance" [label = "aws_instance.tomcat-instance", shape = "box"]
+		"[root] aws_key_pair.instance-key" [label = "aws_key_pair.instance-key", shape = "box"]
+		"[root] aws_security_group.instance-http-sg" [label = "aws_security_group.instance-http-sg", shape = "box"]
+		"[root] aws_security_group.instance-ssh-sg" [label = "aws_security_group.instance-ssh-sg", shape = "box"]
+		"[root] provider.aws" [label = "provider.aws", shape = "diamond"]
+		"[root] aws_instance.tomcat-instance" -> "[root] aws_key_pair.instance-key"
+		"[root] aws_instance.tomcat-instance" -> "[root] aws_security_group.instance-http-sg"
+		"[root] aws_instance.tomcat-instance" -> "[root] aws_security_group.instance-ssh-sg"
+		"[root] aws_key_pair.instance-key" -> "[root] provider.aws"
+		"[root] aws_security_group.instance-http-sg" -> "[root] provider.aws"
+		"[root] aws_security_group.instance-http-sg" -> "[root] var.server_port"
+		"[root] aws_security_group.instance-ssh-sg" -> "[root] provider.aws"
+		"[root] meta.count-boundary (count boundary fixup)" -> "[root] output.public_ip"
+		"[root] meta.count-boundary (count boundary fixup)" -> "[root] var.list_example"
+		"[root] meta.count-boundary (count boundary fixup)" -> "[root] var.map_example"
+		"[root] output.public_ip" -> "[root] aws_instance.tomcat-instance"
+		"[root] provider.aws (close)" -> "[root] aws_instance.tomcat-instance"
+		"[root] root" -> "[root] meta.count-boundary (count boundary fixup)"
+		"[root] root" -> "[root] provider.aws (close)"
+	}
+}
+
